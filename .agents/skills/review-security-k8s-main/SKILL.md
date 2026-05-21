@@ -25,7 +25,7 @@ Launch sub-agents for the following skills:
 - `review-security-k8s-namespaces`
 - `review-security-k8s-service-accounts`
 - `review-security-k8s-storage`
-- `review-security-k8s-validating-admission`
+- `review-security-k8s-admission`
 - `review-security-k8s-pod`
 - `review-security-k8s-agents-main`
 
