@@ -16,7 +16,6 @@ Launch sub-agents for the following skills in parallel (fanout):
 - `review-security-k8s-agents-sandbox`
 - `review-security-k8s-agents-firewall`
 - `review-security-k8s-agents-credentials`
-- `review-security-k8s-agents-blast-radius`
 - `review-security-k8s-agents-prompt-injection`
 - `review-security-k8s-agents-data-exfil`
 - `review-security-k8s-agents-audit-logs`
