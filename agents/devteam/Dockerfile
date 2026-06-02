@@ -42,6 +42,10 @@ RUN chmod -R a+rX /opt/defaults
 COPY agents/shared/stage2-hook.patch /tmp/stage2-hook.patch
 RUN patch /opt/hermes/docker/stage2-hook.sh < /tmp/stage2-hook.patch && rm /tmp/stage2-hook.patch
 
+# Copy devteam skills
+COPY --chown=hermes:hermes agents/shared/skills/ /opt/hermes/skills/
+COPY --chown=hermes:hermes agents/devteam/skills/ /opt/hermes/skills/
+
 # Expose port
 EXPOSE 8642
 EXPOSE 9119
