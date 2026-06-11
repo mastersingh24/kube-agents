@@ -78,15 +78,15 @@ CMD ["hermes", "gateway", "run"]
 FROM agent-base AS devteam
 
 # Copy identity template and defaults from consolidated templates
-COPY config/templates/devteam/SOUL.md /opt/defaults/SOUL.md
-COPY config/templates/devteam/AGENTS.md /opt/defaults/AGENTS.md
-COPY config/templates/devteam/IDENTITY.md /opt/defaults/IDENTITY.md
-COPY config/templates/devteam/HEARTBEAT.md /opt/defaults/HEARTBEAT.md
-COPY config/templates/devteam/cron/ /opt/defaults/cron/
-COPY config/templates/devteam/procedures/ /opt/defaults/procedures/
+COPY agents/devteam/SOUL.md /opt/defaults/SOUL.md
+COPY agents/devteam/AGENTS.md /opt/defaults/AGENTS.md
+COPY agents/devteam/IDENTITY.md /opt/defaults/IDENTITY.md
+COPY agents/devteam/HEARTBEAT.md /opt/defaults/HEARTBEAT.md
+COPY agents/devteam/cron/ /opt/defaults/cron/
+COPY agents/devteam/procedures/ /opt/defaults/procedures/
 
 # Copy devteam skills
-COPY config/templates/devteam/skills/ /opt/hermes/skills/
+COPY agents/devteam/skills/ /opt/hermes/skills/
 
 # Normalize ownership and permissions
 RUN chown -R hermes:hermes /opt/defaults /opt/hermes/skills && \
@@ -102,15 +102,15 @@ RUN chown -R hermes:hermes /opt/defaults /opt/hermes/skills && \
 FROM agent-base AS operator
 
 # Copy identity template and defaults from consolidated templates
-COPY config/templates/operator/SOUL.md /opt/defaults/SOUL.md
-COPY config/templates/operator/AGENTS.md /opt/defaults/AGENTS.md
-COPY config/templates/operator/IDENTITY.md /opt/defaults/IDENTITY.md
-COPY config/templates/operator/HEARTBEAT.md /opt/defaults/HEARTBEAT.md
-COPY config/templates/operator/cron/ /opt/defaults/cron/
-COPY config/templates/operator/procedures/ /opt/defaults/procedures/
+COPY agents/operator/SOUL.md /opt/defaults/SOUL.md
+COPY agents/operator/AGENTS.md /opt/defaults/AGENTS.md
+COPY agents/operator/IDENTITY.md /opt/defaults/IDENTITY.md
+COPY agents/operator/HEARTBEAT.md /opt/defaults/HEARTBEAT.md
+COPY agents/operator/cron/ /opt/defaults/cron/
+COPY agents/operator/procedures/ /opt/defaults/procedures/
 
 # Copy operator skills
-COPY config/templates/operator/skills/ /opt/hermes/skills/
+COPY agents/operator/skills/ /opt/hermes/skills/
 
 # Normalize ownership and permissions
 RUN chown -R hermes:hermes /opt/defaults /opt/hermes/skills && \
@@ -126,18 +126,18 @@ RUN chown -R hermes:hermes /opt/defaults /opt/hermes/skills && \
 FROM agent-base AS platform
 
 # Setup platform specific defaults from consolidated configs
-COPY config/agents/platform/cron/ /opt/defaults/cron/
-COPY config/agents/platform/scripts/ /opt/defaults/scripts/
-COPY config/agents/platform/governance/ /opt/defaults/governance/
-COPY config/agents/platform/SOUL.md /opt/defaults/SOUL.md
-COPY config/agents/platform/AGENTS.md /opt/defaults/AGENTS.md
-COPY config/agents/platform/ROUTING.md /opt/defaults/ROUTING.md
+COPY agents/platform/cron/ /opt/defaults/cron/
+COPY agents/platform/scripts/ /opt/defaults/scripts/
+COPY agents/platform/governance/ /opt/defaults/governance/
+COPY agents/platform/SOUL.md /opt/defaults/SOUL.md
+COPY agents/platform/AGENTS.md /opt/defaults/AGENTS.md
+COPY agents/platform/ROUTING.md /opt/defaults/ROUTING.md
 
 # Copy platform skills
-COPY config/agents/platform/skills/ /opt/hermes/skills/
+COPY agents/platform/skills/ /opt/hermes/skills/
 
 # Copy platform defaults configuration as temp file
-COPY config/agents/platform/config.yaml /tmp/platform-config.yaml
+COPY agents/platform/config.yaml /tmp/platform-config.yaml
 
 
 # Copy devteam deployment template

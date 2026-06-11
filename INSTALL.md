@@ -19,7 +19,7 @@ Copy the pre-packaged platform workspace to your agent harness's workspace direc
 
 ```bash
 # Assuming your agent harness workspace is at /path/to/harness/workspace/agents
-cp -r config/agents/platform /path/to/harness/workspace/agents/platform
+cp -r agents/platform /path/to/harness/workspace/agents/platform
 ```
 
 ### 2. Agent Registration

@@ -6,9 +6,10 @@ This repository contains the Kubernetes Agentic Harness (`kube-agents`). It is a
 
 ## Repository Layout
 
-- `config/`: Source of truth for agent blueprints (personas and skills).
-  - `agents/platform/`: Configuration for the Platform Agent.
-  - `templates/`: Base templates for dynamic subagents (`operator`, `devteam`).
+- `agents/`: Source of truth for agent blueprints (personas and skills).
+  - `platform/`: Configuration for the Platform Agent.
+  - `devteam/`: Blueprint template for the DevTeam Agent.
+  - `operator/`: Blueprint template for the Operator Agent.
 - `deploy/`: Deployment infrastructure code (Dockerfile, Helm charts, manifests).
 - `docs/`: Documentation, guides, and walkthroughs.
 - `local-dev/`: Tooling for local offline testing (Kind setup).
@@ -26,7 +27,7 @@ To use these agents:
 
 ## Skills Guidelines
 
-- Skills are located under `config/agents/platform/skills/` or the subagent template skills paths in `config/templates/`.
+- Skills are located under `agents/platform/skills/`, `agents/devteam/skills/`, or `agents/operator/skills/`.
 - Each skill directory must contain a `SKILL.md` file providing instructions for that specific skill.
 - When adding new skills, ensure they follow the existing structure and are clearly documented to be understood by AI agents.
 
