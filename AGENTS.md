@@ -39,5 +39,7 @@ To use these agents:
 - Push PR branches to a fork, not to the upstream repository.
 - Use `.github/PULL_REQUEST_TEMPLATE.md` for PR body structure and level of
   detail. Do not use `--fill` with `gh pr create` as it bypasses the template.
-- When updating Markdown files, run `npx prettier --write <files>` on the
-  changed Markdown files before committing.
+- **Local Validation Checks:** Before committing, try to run checks locally to avoid CI failures:
+  - **Formatting:** Run `npx prettier --write <files>` on changed Markdown, JSON, or YAML files. You can check all files using `npx prettier --check .` (note: this may check files outside your PR scope).
+  - **Docker Build:** Validate the agent runner Dockerfile by building it locally (e.g., `docker build -f deploy/docker/Dockerfile --target platform .`).
+  - **Operator Code:** If you modify `k8s-operator/`, run `make` or `go build` inside that directory to ensure compilation succeeds.
