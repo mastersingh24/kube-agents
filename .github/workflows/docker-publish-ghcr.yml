@@ -40,7 +40,7 @@ jobs:
         id: build-devteam
         with:
           context: .
-          file: agents/Dockerfile
+          file: deploy/docker/Dockerfile
           target: devteam
           push: true
           tags: |
@@ -54,7 +54,7 @@ jobs:
         id: build-operator
         with:
           context: .
-          file: agents/Dockerfile
+          file: deploy/docker/Dockerfile
           target: operator
           push: true
           tags: |
@@ -68,7 +68,7 @@ jobs:
         id: build-platform
         with:
           context: .
-          file: agents/Dockerfile
+          file: deploy/docker/Dockerfile
           target: platform
           push: true
           tags: |
