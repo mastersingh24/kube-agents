@@ -369,27 +369,27 @@ execute_agent_image() {
 
 # Step 9: Build & Deploy Go Operator Controller
 verify_operator() {
-  kubectl get deployment platform-agent-operator-controller-manager -n platform-agent-operator-system >/dev/null 2>&1 && \
-  gcloud artifacts docker images list "$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/platform-agent-operator" --project="$PROJECT_ID" --format="value(image)" 2>/dev/null | grep -q "platform-agent-operator"
+  kubectl get deployment kubeagents-controller-manager -n kubeagents-system >/dev/null 2>&1 && \
+  gcloud artifacts docker images list "$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/kubeagents-operator" --project="$PROJECT_ID" --format="value(image)" 2>/dev/null | grep -q "kubeagents-operator"
 }
 execute_operator() {
-  local OPERATOR_IMG="$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/platform-agent-operator:latest"
+  local OPERATOR_IMG="$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/kubeagents-operator:latest"
   print_info "1/2. Building and pushing Go Operator image via Google Cloud Build..."
   (
-    cd "$SCRIPT_DIR/platform-agent-operator"
+    cd "$SCRIPT_DIR/../../k8s-operator"
     gcloud builds submit --tag "$OPERATOR_IMG" --project "$PROJECT_ID" .
   )
   
-  print_info "2/2. Registering CRD & deploying Operator Controller in namespace platform-agent-operator-system..."
+  print_info "2/2. Registering CRD & deploying Operator Controller in namespace kubeagents-system..."
   (
-    cd "$SCRIPT_DIR/platform-agent-operator"
+    cd "$SCRIPT_DIR/../../k8s-operator"
     # deploy automatically runs 'make install' (CRD registration) first!
     make deploy IMG="$OPERATOR_IMG"
   )
 
   print_info "Setting environment variables on operator deployment..."
-  kubectl set env deployment/platform-agent-operator-controller-manager \
-      -n platform-agent-operator-system \
+  kubectl set env deployment/kubeagents-controller-manager \
+      -n kubeagents-system \
       GOOGLE_CLOUD_PROJECT_ID="$PROJECT_ID" \
       GOOGLE_CLOUD_PROJECT_NUMBER="$PROJECT_NUMBER"
 }
@@ -416,7 +416,7 @@ verify_operator_identity() {
   done
 
   # Check if Workload Identity binding exists
-  local wi_member="serviceAccount:${PROJECT_ID}.svc.id.goog[platform-agent-operator-system/platform-agent-operator-controller-manager]"
+  local wi_member="serviceAccount:${PROJECT_ID}.svc.id.goog[kubeagents-system/kubeagents-controller-manager]"
   local wi_binding=$(gcloud iam service-accounts get-iam-policy "${gsa_email}" \
       --flatten="bindings" \
       --filter="bindings.role:roles/iam.workloadIdentityUser AND bindings.members:${wi_member}" \
@@ -424,8 +424,8 @@ verify_operator_identity() {
   [ "$wi_binding" = "roles/iam.workloadIdentityUser" ] || return 1
 
   # Check if KSA is annotated
-  local ksa_annotation=$(kubectl get serviceaccount platform-agent-operator-controller-manager \
-      -n platform-agent-operator-system \
+  local ksa_annotation=$(kubectl get serviceaccount kubeagents-controller-manager \
+      -n kubeagents-system \
       -o jsonpath='{.metadata.annotations.iam\.gke\.io/gcp-service-account}' 2>/dev/null || echo "")
   [ "$ksa_annotation" = "$gsa_email" ] || return 1
 
@@ -461,29 +461,29 @@ execute_operator_identity() {
   print_info "Configuring Workload Identity binding for Operator..."
   gcloud iam service-accounts add-iam-policy-binding "${gsa_email}" \
       --role="roles/iam.workloadIdentityUser" \
-      --member="serviceAccount:${PROJECT_ID}.svc.id.goog[platform-agent-operator-system/platform-agent-operator-controller-manager]" \
+      --member="serviceAccount:${PROJECT_ID}.svc.id.goog[kubeagents-system/kubeagents-controller-manager]" \
       --project="${PROJECT_ID}" \
       --quiet >/dev/null
 
   print_info "Creating Operator namespace if not exists..."
-  kubectl create namespace platform-agent-operator-system --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace kubeagents-system --dry-run=client -o yaml | kubectl apply -f -
 
   print_info "Creating Operator KSA if not exists..."
-  kubectl create serviceaccount platform-agent-operator-controller-manager \
-      --namespace="platform-agent-operator-system" \
+  kubectl create serviceaccount kubeagents-controller-manager \
+      --namespace="kubeagents-system" \
       --dry-run=client -o yaml | kubectl apply -f -
 
   print_info "Annotating Operator KSA..."
   kubectl annotate serviceaccount \
-      --namespace="platform-agent-operator-system" \
-      platform-agent-operator-controller-manager \
+      --namespace="kubeagents-system" \
+      kubeagents-controller-manager \
       "iam.gke.io/gcp-service-account=${gsa_email}" \
       --overwrite
 
-  if kubectl get deployment/platform-agent-operator-controller-manager -n platform-agent-operator-system >/dev/null 2>&1; then
+  if kubectl get deployment/kubeagents-controller-manager -n kubeagents-system >/dev/null 2>&1; then
     print_info "Restarting Operator Controller to pick up Workload Identity..."
-    kubectl rollout restart deployment/platform-agent-operator-controller-manager -n platform-agent-operator-system
-    kubectl rollout status deployment/platform-agent-operator-controller-manager -n platform-agent-operator-system --timeout=120s
+    kubectl rollout restart deployment/kubeagents-controller-manager -n kubeagents-system
+    kubectl rollout status deployment/kubeagents-controller-manager -n kubeagents-system --timeout=120s
   else
     print_info "Operator Controller deployment not found; it will pick up the identity when deployed."
   fi
@@ -534,7 +534,7 @@ echo -e "       - Under Visibility, check: ${C_GREEN}Only specific people (add y
 
 echo -e ""
 echo -e "[ ] 2. Monitor Operator and Gateway pods rollout progress:"
-echo -e "       ${C_WHITE}kubectl get pods -n platform-agent-operator-system${C_RESET}"
+echo -e "       ${C_WHITE}kubectl get pods -n kubeagents-system${C_RESET}"
 echo -e "       ${C_WHITE}kubectl get pods -n ${NAMESPACE}${C_RESET}"
 
 echo -e ""

@@ -11,14 +11,10 @@ Instead of relying on local, imperative bash scripts to configure GCP infrastruc
 ```bash
 integrations/gchat/
 ├── provision.sh           # Idempotent, interactive setup to provision GKE, APIs, secrets, build agent, operator, and custom resource
-├── teardown.sh            # Idempotent, interactive cleanup to tear down all GKE, operator, and GCP resources in reverse
-├── operator/              # Go-based Kubernetes Operator project (Kubebuilder-scaffolded)
-    ├── api/v1alpha1/      # Custom Resource Definition (CRD) Spec types
-    ├── internal/          # Controller reconciliation logic
-    ├── config/            # Kustomize configurations for installing the CRD and deploying the operator
-    ├── Dockerfile         # Containerizes the operator manager
-    └── Makefile           # Standard targets for building, testing, and deploying the operator
+└── teardown.sh            # Idempotent, interactive cleanup to tear down all GKE, operator, and GCP resources in reverse
 ```
+
+_Note: The Go-based Kubernetes Operator code resides in the root [k8s-operator/](../../k8s-operator) directory._
 
 ---
 
@@ -65,7 +61,7 @@ The script will ask you for:
 Once the script completes, check that the operator and gateway are rolling out:
 
 ```bash
-kubectl get deployments -n platform-agent-operator-system
+kubectl get deployments -n kubeagents-system
 kubectl get pods -n agent-system
 ```
 

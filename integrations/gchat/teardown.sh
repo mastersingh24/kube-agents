@@ -120,16 +120,16 @@ fi
 # ─── Step 3: Undeploy Go Operator ─────────────────────────────────────────────
 if [ -n "$CLUSTER_EXISTS" ]; then
   echo -e "\n${C_BOLD}=== 3. Tearing Down Go Operator ===${C_RESET}"
-  if [ -d "${SCRIPT_DIR}/platform-agent-operator" ]; then
-    echo -e "  ${C_CYAN}ℹ Running make undeploy & make uninstall...${C_RESET}"
+  if [ -d "${SCRIPT_DIR}/../../k8s-operator" ]; then
+    echo -e "  ${C_CYAN}ℹ Running make undeploy & make uninstall on new operator...${C_RESET}"
     (
-      cd "${SCRIPT_DIR}/platform-agent-operator"
+      cd "${SCRIPT_DIR}/../../k8s-operator"
       make undeploy ignore-not-found=true || true
       make uninstall ignore-not-found=true || true
     )
-    echo -e "  ${C_GREEN}✓ Go Operator successfully undeployed.${C_RESET}"
+    echo -e "  ${C_GREEN}✓ Operator successfully undeployed.${C_RESET}"
   else
-    echo -e "  ${C_YELLOW}⚠ platform-agent-operator directory not found. Skipping Operator cleanup.${C_RESET}"
+    echo -e "  ${C_YELLOW}⚠ k8s-operator directory not found. Skipping Operator cleanup.${C_RESET}"
   fi
 fi
 
