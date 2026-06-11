@@ -71,17 +71,14 @@ HERMES_HOME=$PROFILE_DIR hermes chat "Analyze my spreadsheet"
 
 ```
 
-```
 3.  **The "Paste-back" Orchestrator:** When a user initiates a 3-legged OAuth flow, the orchestration layer must catch the manual callback URL from the user and route it to the correct `HERMES_HOME`. This ensures the token is placed in the specific profile folder belonging to that client.
 
 ---
 
 ## 5. Security & Scaling Recommendations
 
-*   **File System Security:** In Resident configurations, use OS-level `chown` or `chmod` to ensure that even if a process is compromised, the agent cannot read another user's `mcp-tokens/` directory.
-*   **Centralized Secret Management:** For high-security environments, move toward a hybrid model where tokens are encrypted at rest using a key per user profile.
-*   **Observability:** Implement logging that tracks which `Client_ID` initiated an MCP tool call to maintain a clear audit trail for compliance.
+- **File System Security:** In Resident configurations, use OS-level `chown` or `chmod` to ensure that even if a process is compromised, the agent cannot read another user's `mcp-tokens/` directory.
+- **Centralized Secret Management:** For high-security environments, move toward a hybrid model where tokens are encrypted at rest using a key per user profile.
+- **Observability:** Implement logging that tracks which `Client_ID` initiated an MCP tool call to maintain a clear audit trail for compliance.
 
 **Follow-up:** Does your current infrastructure already have a centralized identity provider (like Okta, Auth0, or Google Identity) that we should use for the mapping layer, or are you looking to build the mapping logic from scratch?
-
-```

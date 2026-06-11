@@ -63,7 +63,7 @@ kube-agents/
 
 - **Action:** Create a Git branch `archive/v1-local-harness` to preserve the historical local-execution files.
 - **Action:** Remove the obsolete `workspace/` files that target local execution runners (like simple local shell scripts or local-only heartbeat configurations).
-- **Action:** Keep `workspace/agents/platform/templates/` as they are required by the Platform Agent for dynamic provisioning.
+- **Action:** Keep the dynamic provisioning templates, now relocated to `config/templates/`, as they are required by the Platform Agent for dynamic provisioning.
 
 ### 1.2. De-duplicate Configurations (Generic Image Model) **[MANDATORY]**
 

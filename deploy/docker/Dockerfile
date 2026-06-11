@@ -93,7 +93,8 @@ RUN chown -R hermes:hermes /opt/defaults /opt/hermes/skills && \
     find /opt/defaults -type d -exec chmod 755 {} + && \
     find /opt/defaults -type f -exec chmod 644 {} + && \
     find /opt/hermes/skills -type d -exec chmod 755 {} + && \
-    find /opt/hermes/skills -type f -exec chmod 644 {} +
+    find /opt/hermes/skills -type f -exec chmod 644 {} + && \
+    find /opt/hermes/skills -path '*/scripts/*' -type f -exec chmod 755 {} + 2>/dev/null || true
 
 
 
@@ -116,7 +117,8 @@ RUN chown -R hermes:hermes /opt/defaults /opt/hermes/skills && \
     find /opt/defaults -type d -exec chmod 755 {} + && \
     find /opt/defaults -type f -exec chmod 644 {} + && \
     find /opt/hermes/skills -type d -exec chmod 755 {} + && \
-    find /opt/hermes/skills -type f -exec chmod 644 {} +
+    find /opt/hermes/skills -type f -exec chmod 644 {} + && \
+    find /opt/hermes/skills -path '*/scripts/*' -type f -exec chmod 755 {} + 2>/dev/null || true
 
 
 
