@@ -20,19 +20,31 @@ kube-agents/
 │   └── pkg/tui/                # Interactive wizard components
 ├── personas/                   # Reusable SOUL.md & IDENTITY.md files (Aesthetics, tone, role focus)
 │   ├── standard-operator/
+│   │   ├── SOUL.md
+│   │   └── IDENTITY.md
 │   ├── paranoid-security-auditor/
 │   └── frugal-cost-optimizer/
-├── skills/                     # Composable executable tools (MCP scripts, CLI wrappers, YAML modifiers)
+├── skills/                     # Composable executable tools (MCP servers & scripts)
 │   ├── gke-cost-analysis/
+│   │   ├── mcp_servers/        # Implementing MCP servers (e.g., Python FastMCP)
+│   │   │   └── cost_mcp_server.py
+│   │   └── scripts/            # Composable standalone/utility scripts (bash, python, etc.)
+│   │       └── preflight.sh
 │   ├── gke-workload-security/
 │   └── gke-observability/
 ├── procedures/                 # Standard Operating Procedures (SOPs / markdown-driven reasoning guides)
 │   ├── cve_scan_sop.md
 │   └── weekly_cost_report_sop.md
-└── templates/                  # Seed configs / default blueprints for one-click compilation
+├── schedules/                  # Reusable cron triggers & prompt loops (YAML definitions)
+│   ├── weekly-cost-audit.yaml
+│   └── compliance-check.yaml
+└── templates/                  # Seed configs / default blueprints for one-click compilation (DASP manifests)
     ├── platform/
+    │   └── agent-profile.yaml  # Default platform template
     ├── operator/
+    │   └── agent-profile.yaml  # Default operator template
     └── devteam/
+        └── agent-profile.yaml  # Default devteam template
 ```
 
 ---
