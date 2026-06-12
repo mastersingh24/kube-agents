@@ -328,6 +328,27 @@ schedules:
 
 ---
 
+#### DASP Example Alignment & Repository Gap Analysis
+
+> [!WARNING]
+> The `frugal-cost-optimizer` manifest and its referenced `./skills/gke-cost-analysis/` or `./procedures/` paths are **illustrative specifications** used to demonstrate the syntax and potential of the Polymorphic Reference Model.
+
+A strict gap analysis of the current repository layout following the rebase reveals several structural differences between the _legacy hardcoded setup_ and this _target composable model_:
+
+1.  **Empty Shared Skills:** The root `/skills/` folder has been established (`skills/gke-compute-class-creator/`), but its `/scripts` sub-folder is currently empty.
+2.  **Agent-Bound Scripts:** Highly reusable scripts are currently trapped inside agent-specific subfolders (e.g., `agents/devteam/skills/gke-workload-security/scripts/audit_cluster.sh` or `agents/platform/skills/submit-suggestion/scripts/submit_suggestion.py`).
+3.  **Agent-Bound Procedures:** Standard Operating Procedures (SOPs) are also restricted inside agent directories (e.g., `agents/devteam/procedures/deployment_failure_resolver_sop.md`), and no global `/procedures/` folder exists at the root.
+
+#### Recommended Refactoring Steps:
+
+To align the codebase with this flexible, dynamic assembly specification, we recommend executing the following repository migrations:
+
+- **Step 1: Consolidate Shared Skills:** Relocate reusable script assets (e.g., `audit_cluster.sh`) out of agent-specific folders and into root-level skill directories (e.g., `/skills/gke-workload-security/scripts/audit_cluster.sh`). This enables any custom compiled agent to mix-and-match them.
+- **Step 2: Establish Root-Level Procedures:** Create a `/procedures/` directory at the root level of the repository. Move all specialized SOP markdown files (such as `cve_scan_sop.md` and `deployment_failure_resolver_sop.md`) there so they are universally accessible to the headless compiler.
+- **Step 3: Update Operator Controllers:** Refactor the Go controllers in `k8s-operator/internal/controller/` to locate skill blocks and procedure markdown guides from these shared root-level directories when compiling ConfigMaps.
+
+---
+
 ### C. Headless Execution Vectors
 
 Because the compiler CLI (`kube-agent-cli`) is a single compiled Go binary, it can be run headlessly in any environment to spit out the workspace files on the fly.
