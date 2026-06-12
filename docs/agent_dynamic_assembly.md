@@ -259,7 +259,14 @@ graph LR
 
 ### B. The `agent-profile.yaml` Schema Specification
 
-The DASP schema defines the entire agent workspace, bringing together markdown descriptions, executable cron actions, local procedures, and MCP servers into a single declarative template:
+The DASP schema defines the entire agent workspace, bringing together markdown descriptions, executable cron actions, local procedures, and MCP servers into a single declarative template.
+
+#### The Polymorphic Reference Model
+
+To keep YAML manifests clean and highly reusable, **every content-bearing node** in the schema (`soul`, `identity`, `procedures`, `mcp_servers`, and `scripts`) supports a polymorphic format. You can define content in two ways:
+
+1.  **Direct Inlining:** Using a YAML block-string (`|`) or an inline `content:` parameter. This is ideal for short, specialized scripts, configs, or rapid prototyping.
+2.  **File Referencing (`ref`):** Supplying a `ref` path pointing to an external file (e.g., `ref: "./personas/frugal-cost-optimizer/SOUL.md"`). During compilation, the headless CLI resolves these relative paths and pulls the content in, promoting absolute reusability of Markdown SOPs, shell scripts, and python logic across different agents.
 
 ```yaml
 # agent-profile.yaml
@@ -269,13 +276,12 @@ metadata:
   version: "1.2.0"
   description: "Dynamic cost analyzer for multi-tenant GKE clusters"
 
-# 1. Core Identity & Prompt Configuration (Inlined or Referenced)
+# 1. Core Identity & Prompt Configuration (Polymorphic: Inlined or Referenced)
 identity:
-  soul: |
-    # SOUL.md (Inlined)
-    You are the Frugal Cost Optimizer. Your core objective is to detect overprovisioned CPU/Memory,
-    recommend cluster scaling actions, and enforce GKE Compute Classes. You speak with quantitative
-    precision, prioritizing cost savings while protecting SLA latency constraints.
+  # Referenced external Markdown file (keeps YAML clean and reusable)
+  soul:
+    ref: "./personas/frugal-cost-optimizer/SOUL.md"
+  # Inlined directly in the YAML
   identity: |
     # IDENTITY.md (Inlined)
     Identity: Cost-Optimizer-Agent-01
