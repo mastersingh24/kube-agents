@@ -218,9 +218,155 @@ To allow developers to assemble agent profiles with ease, we propose a Go-based 
 
 ---
 
-## 5. Implementation Roadmap
+---
+
+## 5. Declarative Agent Source Profile (DASP) & Headless Compilation
+
+To enable git-ops-friendly, automated, and deterministic provisioning across multiple delivery platforms, we establish the **Declarative Agent Source Profile (DASP)**.
+
+Rather than maintaining fragile physical folder structures in source control, a GKE operations agent is declared entirely inside a single unified `agent-profile.yaml` file. The `kube-agent-cli` is then executed in a **headless manner** (within a Docker image, CI/CD pipeline, or Kustomize generator) to translate this declarative YAML manifest into the exact physical folder and file structure required at runtime.
+
+### A. The DASP Compilation Flow
+
+```mermaid
+graph LR
+    subgraph "Source (Declarative)"
+        YAML["agent-profile.yaml<br>(Declarative Manifest)"]
+    end
+
+    subgraph "Headless Compiler (CLI Engine)"
+        CLI["kube-agent-cli compile<br>(Headless Runner in Docker/CI)"]
+    end
+
+    subgraph "Target Runtime Artifacts (Physical Layout)"
+        direction TB
+        F_Soul["/workspace/SOUL.md"]
+        F_Id["/workspace/IDENTITY.md"]
+        F_Cron["/workspace/cron/jobs.json"]
+        F_Scr["/workspace/scripts/platform_mcp_server.py"]
+        F_SOP["/workspace/procedures/cve_scan_sop.md"]
+    end
+
+    YAML -->|Input Manifest| CLI
+    CLI -->|Parses & Dynamically Generates| F_Soul
+    CLI -->|Resolves Imports| F_Id
+    CLI -->|Compiles Schedule JSON| F_Cron
+    CLI -->|Inlines MCP Server Code| F_Scr
+    CLI -->|Populates Procedures| F_SOP
+```
+
+---
+
+### B. The `agent-profile.yaml` Schema Specification
+
+The DASP schema defines the entire agent workspace, bringing together markdown descriptions, executable cron actions, local procedures, and MCP servers into a single declarative template:
+
+```yaml
+# agent-profile.yaml
+schema_version: "v1alpha1"
+metadata:
+  name: "frugal-cost-optimizer"
+  version: "1.2.0"
+  description: "Dynamic cost analyzer for multi-tenant GKE clusters"
+
+# 1. Core Identity & Prompt Configuration (Inlined or Referenced)
+identity:
+  soul: |
+    # SOUL.md (Inlined)
+    You are the Frugal Cost Optimizer. Your core objective is to detect overprovisioned CPU/Memory,
+    recommend cluster scaling actions, and enforce GKE Compute Classes. You speak with quantitative
+    precision, prioritizing cost savings while protecting SLA latency constraints.
+  identity: |
+    # IDENTITY.md (Inlined)
+    Identity: Cost-Optimizer-Agent-01
+    Primary Directives: Maximize cluster resource efficiency, audit KCC ContainerCluster metrics.
+
+# 2. Composable Procedures / Guidance Guides
+procedures:
+  - name: "weekly_cost_report_sop.md"
+    ref: "./procedures/gke_cost_analysis_sop.md" # Referenced external file
+  - name: "emergency_scaling_sop.md"
+    content: |
+      # Emergency Scaling SOP (Inlined)
+      1. Inspect HPA thresholds via `kubectl get hpa`.
+      2. If target namespace utilization exceeds 85%, request immediate quota hike.
+
+# 3. Composable Scripts & MCP Servers
+skills:
+  - name: "gke-cost-analysis"
+    mcp_servers:
+      - name: "cost_mcp_server.py"
+        runtime: "python3"
+        content: |
+          # cost_mcp_server.py (Inlined fastmcp server)
+          from mcp.server.fastmcp import FastMCP
+          mcp = FastMCP("Cost Optimizer")
+
+          @mcp.tool()
+          def get_cluster_idle_costs(cluster_id: str) -> str:
+              """Audits GKE billing export BigQuery table for waste."""
+              return "Detected $420/month waste in unused standard node pools."
+    scripts:
+      - name: "preflight_drift_scan.sh"
+        runtime: "bash"
+        ref: "./skills/gke-cost-analysis/preflight.sh"
+
+# 4. Scheduling & Prompt Loops
+schedules:
+  - name: "weekly-cost-audit"
+    cron: "0 9 * * 1" # Every Monday at 9:00 AM
+    trigger_prompt: |
+      Execute weekly cost audit. Run 'get_cluster_idle_costs', format the output using
+      'weekly_cost_report_sop.md', and post a slack recommendation to the team.
+```
+
+---
+
+### C. Headless Execution Vectors
+
+Because the compiler CLI (`kube-agent-cli`) is a single compiled Go binary, it can be run headlessly in any environment to spit out the workspace files on the fly.
+
+#### Vector 1: Dockerfile Pre-Bake
+
+This approach resolves the profile and compiles the agent workspace directly during the image building phase, creating immutable, runtime-ready agent images.
+
+```dockerfile
+FROM golang:1.22-alpine AS compiler
+WORKDIR /app
+COPY cli/ .
+RUN go build -o /usr/bin/kube-agent-cli ./main.go
+
+FROM nousresearch/hermes-agent:latest
+COPY --from=compiler /usr/bin/kube-agent-cli /usr/bin/kube-agent-cli
+COPY agent-profile.yaml /opt/agent-profile.yaml
+COPY procedures/ /opt/procedures/
+
+# Compile the YAML profile into physical files headlessly
+RUN kube-agent-cli compile --profile /opt/agent-profile.yaml --output /opt/data/workspace/
+```
+
+#### Vector 2: Kustomize Generator Plugin
+
+For teams leveraging GitOps and native GKE config management, a Kustomize executive generator plugin executes the headless compiler on the fly to emit ConfigMaps containing the compiled files.
+
+```yaml
+# kustomization.yaml
+generators:
+  - |
+    apiVersion: kustomize.config.k8s.io/v1beta1
+    kind: Generator
+    metadata:
+      name: agent-workspace-compiler
+    spec:
+      command: ["kube-agent-cli", "compile", "--profile", "agent-profile.yaml", "--output", "./compiled-config/"]
+```
+
+---
+
+## 6. Implementation Roadmap
 
 1.  **Repository Restructuring:** Create the shared `/personas/` and `procedures/` folders. Migrate existing hardcoded SOPs into discrete markdown files.
 2.  **Go Operator CRD Expansion:** Introduce the `CustomAgent` Custom Resource Definition and controller inside `k8s-operator/` to handle dynamic ConfigMap compilation and multi-namespace RBAC injection.
 3.  **TUI CLI Construction:** Build the `kube-agent-cli` terminal application under `cli/` using `bubbletea` and `lipgloss` for rich terminal rendering.
-4.  **Pre-flight Hook Integration:** Update the container's entrypoint cron engine to run Skill pre-flight scripts, preventing expensive cognitive LLM invocations unless requested.
+4.  **Headless Compiler Engine Development:** Implement the `kube-agent-cli compile` command to parse the `agent-profile.yaml` (DASP) schema, download/inline files, and spit out target folder/file structures.
+5.  **Pre-flight Hook Integration:** Update the container's entrypoint cron engine to run Skill pre-flight scripts, preventing expensive cognitive LLM invocations unless requested.
