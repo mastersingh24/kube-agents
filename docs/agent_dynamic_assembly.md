@@ -363,6 +363,50 @@ generators:
 
 ---
 
+### D. Universal Compilation Targets (Multi-Harness Generation)
+
+To maximize portability, the `kube-agent-cli` headless compiler decouples the abstract agent definition from any specific execution runtime. Over time, the compiler acts as a **Universal Transpiler for AI Agents**, parsing a single source-of-truth `agent-profile.yaml` (DASP) and outputting the specific file layouts, JSON configurations, and API payloads required by different runtime harnesses.
+
+```mermaid
+graph TD
+    classDef source fill:#E1F5FE,stroke:#0288D1,stroke-width:2px;
+    classDef target fill:#ECEFF1,stroke:#455A64,stroke-width:2px;
+
+    Source["Declarative Source<br>(agent-profile.yaml)"]:::source
+    Compiler["kube-agent-cli compile<br>(Headless Engine)"]
+
+    T_Hermes["Target: --target=hermes<br>(Folder-backed FastMCP / crons)"]:::target
+    T_Anti["Target: --target=antigravity<br>(Advanced workspaces / tool-groups)"]:::target
+    T_GCP["Target: --target=cloud-agents-api<br>(Google Cloud Agents / Vertex AI SDK)"]:::target
+    T_Scion["Target: --target=scion<br>(scion-agent.yaml / git worktrees)"]:::target
+
+    Source --> Compiler
+    Compiler -->|Generates| T_Hermes
+    Compiler -->|Generates| T_Anti
+    Compiler -->|Generates| T_GCP
+    Compiler -->|Generates| T_Scion
+```
+
+By supplying a `--target` flag at compile-time, administrators can compile agent blueprints polymorphically:
+
+1.  **`--target hermes` (Initial Target):**
+    - Generates raw folder-backed workspaces, local python FastMCP servers, custom `.claude/` files, and `cron/jobs.json` configurations utilized by our starting runner.
+2.  **`--target antigravity`:**
+    - Generates structured, advanced workspace directories, automated tool groupings, and markdown knowledge indexes optimized specifically for execution within the Antigravity pair-programming agent environment.
+3.  **`--target scion`:**
+    - Generates a standardized `.scion/templates/` directory containing a native `scion-agent.yaml` config, a custom `agents.md` instructions file, and the requisite git worktree and settings YAML parameters to run inside Scion's Go-based container broker.
+4.  **`--target cloud-agents-api`:**
+    - Compiles the declarative YAML into the precise, enterprise-grade JSON API payloads needed to register, configure, and boot the agent with the native **Google Cloud Agents API** and Vertex AI Agent Builder.
+
+#### Strategic Value of the Polymorphic Compiler:
+
+- **Zero Migration Cost:** If the underlying platform moves from the initial Hermes agent setup to Scion or Google Cloud Agents API, SRE teams do not need to rewrite any of their custom prompts, skills, crons, or procedures.
+- **Write Once, Run Anywhere:** A single `agent-profile.yaml` can be compiled for local debugging inside a developer's Scion container, and then re-compiled into Google Cloud Agents API for secure, enterprise production hosting.
+
+---
+
+---
+
 ## 6. Implementation Roadmap
 
 1.  **Repository Restructuring:** Create the shared `/personas/` and `procedures/` folders. Migrate existing hardcoded SOPs into discrete markdown files.
