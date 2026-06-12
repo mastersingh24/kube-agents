@@ -56,6 +56,7 @@ To understand the core design, real-world deployment friction points, and standa
 1. **[Initial GKE Multi-Agent Cooperative Architecture Specification](docs/agent_architecture.md)**: Formal specification of agent roles, Python FastMCP gateways, and multi-agent sequence workflows.
 2. **[Architectural Friction & Limitations Analysis](docs/agent_friction.md)**: Identification of the 5 core limitations regarding persona rigidity, monolithic coupling, narrow namespace boundaries, rigid GitOps constraints, and high-cost cron wakeups.
 3. **[Target Scion Evolution Specification](docs/agent_scion_evolution.md)**: Target evolution blueprint demonstrating how standardizing our platform on the **Scion** containerized orchestration platform natively resolves each friction point via Go-based runners, declarative agent templates, isolated git worktrees, interactive tmux debugging, and pre-screened heartbeats.
+4. **[GKE Agent Blueprints & Dynamic Assembly Specification](docs/agent_dynamic_assembly.md)**: Native architectural blueprint for dynamic, on-the-fly agent assembly using modular GKE reusable skills, declarative CRDs, pre-flight screening scripts, and a Go/Bubble Tea Interactive TUI Builder.
 
 ## Disclaimer
 
