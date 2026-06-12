@@ -432,6 +432,78 @@ By supplying a `--target` flag at compile-time, administrators can compile agent
 
 ---
 
+### E. Externally Sourced Skills (Remote Git Registries)
+
+To scale GKE operations across complex enterprise environments and encourage open-source collaboration, the Declarative Agent Source Profile (DASP) framework supports **Externally Sourced Skills**.
+
+Rather than restricting an agent to skills locally committed in its repository, the `agent-profile.yaml` can reference remote, version-locked skill catalogs hosted on public or private Git repositories (e.g., `github.com/google/skills/cloud` or internal GitLab instances).
+
+```mermaid
+graph TD
+    classDef remote fill:#FFF3E0,stroke:#FF9800,stroke-width:2px;
+    classDef cache fill:#F1F8E9,stroke:#558B2F,stroke-width:2px;
+
+    Source["agent-profile.yaml<br>(ref: github.com/google/skills/cloud@v1.4.0)"]
+    Compiler["kube-agent-cli compile<br>(Headless Engine)"]
+
+    Reg_Google["Remote Registry:<br>github.com/google/skills/cloud"]:::remote
+    Local_Cache["Local Skill Cache:<br>~/.kube-agents/cache/github.com/google/skills/cloud@v1.4.0"]:::cache
+
+    Compiled_Pod["Compiled Agent Pod Workspace<br>(SOUL + SOPs + Compiled Skills)"]
+
+    Source --> Compiler
+    Compiler -->|1. Scans for remote URIs| Reg_Google
+    Reg_Google -->|2. Downloads version-locked branch/tag| Local_Cache
+    Local_Cache -->|3. Resolves and extracts scripts/MCPs| Compiler
+    Compiler -->|4. Emits compiled artifacts| Compiled_Pod
+```
+
+#### 1. Schema Integration for Remote Skills
+
+We declare remote imports by supplying a standard repository URI with optional **SemVer tag bindings** or branch specifications inside the `skills` array:
+
+```yaml
+# agent-profile.yaml
+schema_version: "v1alpha1"
+metadata:
+  name: "compliance-monitor"
+
+skills:
+  # A local skill committed in the active repo
+  - name: "local-app-onboarding"
+    ref: "./skills/gke-app-onboarding"
+
+  # An externally sourced cloud security skill with version locking
+  - name: "gke-cloud-security"
+    ref: "github.com/google/skills/cloud/gke-security-scans@v1.4.0" # Fetches from Google remote registry
+
+  # An internally maintained platform skill from a private enterprise GitLab repo
+  - name: "corporate-governance-policies"
+    ref: "gitlab.corp.internal/platform/agent-skills/compliance@main" # Fetches from private gitlab main branch
+```
+
+#### 2. Headless Compiler Resolution Pipeline
+
+When the headless `kube-agent-cli compile` executes, it processes remote imports through a structured four-stage caching and validation pipeline:
+
+1.  **URI Parsing & Authentication:**
+    - The compiler identifies remote git schemes.
+    - If the URI targets a private repository (e.g., `gitlab.corp.internal`), the compiler automatically retrieves credentials using the local host's SSH agent, standard Git credentials helper, or cloud secret tokens (e.g., `GITHUB_TOKEN`).
+2.  **Dynamic Cloning & Local Caching:**
+    - The compiler runs a fast local cloning engine (using lightweight Go git bindings like `go-git`).
+    - It downloads the specified tag/branch into an isolated local cache path (e.g., `~/.kube-agents/cache/github.com/google/skills/cloud/gke-security-scans@v1.4.0`).
+    - If the requested version is already present in the local cache, the network download is skipped entirely, ensuring fast compilation.
+3.  **Strict Checksum Verification:**
+    - For high-security GKE clusters, the compiler verifies file checksums against a lockfile (`skills-lock.json`) to prevent man-in-the-middle attacks or malicious remote tampering.
+4.  **Artifact Extraction & Synthesis:**
+    - The compiler extracts the remote skill's Standard Operating Procedures (SOPs), MCP servers, and preflight scripts from the cached repository.
+    - It transpiles and packages them into the final deployment artifacts (ConfigMaps, directory mounts, or Scion template folders) exactly as if they had been authored locally.
+
+#### Strategic Benefits of External Skill Catalogs:
+
+- **A Standardized "Agent Skill Store":** Enables Google, Kubernetes maintainers, and platform teams to build, audit, and distribute official operational skills (e.g., standard GKE backup/restore scripts, certified PCI-DSS compliance audits) that can be instantly consumed by any company's agent.
+- **Decoupled Upgrades:** Platform teams can push security skill improvements or bug fixes to a central repository. All deployed agents will pull and benefit from the updated operational intelligence upon their next compilation/re-reconciliation loop without modifying their central agent declarations.
+
 ---
 
 ## 6. Implementation Roadmap
