@@ -49,6 +49,14 @@ gateway-cli agents add platform --workspace ./agents/platform --non-interactive
 
 For more details on routing policies, proof gates, and showcasing scenarios, see the [Kubernetes Multi-Agent Integration Guide](docs/m1-demos.md).
 
+### Multi-Agent Architecture & Evolution Roadmaps
+
+To understand the core design, real-world deployment friction points, and standardizing on modern container-based multi-agent orchestration:
+
+1. **[Initial GKE Multi-Agent Cooperative Architecture Specification](docs/agent_architecture.md)**: Formal specification of agent roles, Python FastMCP gateways, and multi-agent sequence workflows.
+2. **[Architectural Friction & Limitations Analysis](docs/agent_friction.md)**: Identification of the 5 core limitations regarding persona rigidity, monolithic coupling, narrow namespace boundaries, rigid GitOps constraints, and high-cost cron wakeups.
+3. **[Target Scion Evolution Specification](docs/agent_scion_evolution.md)**: Target evolution blueprint demonstrating how standardizing our platform on the **Scion** containerized orchestration platform natively resolves each friction point via Go-based runners, declarative agent templates, isolated git worktrees, interactive tmux debugging, and pre-screened heartbeats.
+
 ## Disclaimer
 
 This is not an officially supported Google product.
