@@ -208,6 +208,13 @@ func buildDeployment(agent *agentv1alpha1.PlatformAgent, configHash, fluentBitHa
 		},
 	}
 
+	if agent.Spec.Deployment != nil && len(agent.Spec.Deployment.BrowserArgs) > 0 {
+		envVars = append(envVars, corev1.EnvVar{
+			Name:  "AGENT_BROWSER_ARGS",
+			Value: strings.Join(agent.Spec.Deployment.BrowserArgs, " "),
+		})
+	}
+
 	if agent.Spec.Harness != nil {
 		if agent.Spec.Harness.ClusterName != "" {
 			envVars = append(envVars, corev1.EnvVar{
