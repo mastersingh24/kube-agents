@@ -167,6 +167,24 @@ metadata:
       name: platformagent
       uid: ""
 ---
+apiVersion: v1
+data:
+  SETTINGS.md: |
+    # GKE Scope Configuration
+    - **Git Repo:** None
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: platformagent-settings
+  namespace: kubeagents-system
+  ownerReferences:
+    - apiVersion: kubeagents.x-k8s.io/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: PlatformAgent
+      name: platformagent
+      uid: ""
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -194,6 +212,7 @@ spec:
       annotations:
         kubeagents.x-k8s.io/config-hash: 029e3e097c8c21d4a9d86e6a599b34813165b4f0113cde02eff297e3162494a3
         kubeagents.x-k8s.io/fluent-bit-config-hash: 50923ab88e1741b0729c37837bc1c3869161e3161402494a4ee64cda3a2cfab3
+        kubeagents.x-k8s.io/settings-config-hash: 9db5b5cb5fb8ec46b1a0572ef34ef27e0ed44dc1f787a4a76bdd75f43934c8b9
       creationTimestamp: null
       labels:
         app: platformagent-gateway
@@ -253,6 +272,10 @@ spec:
             - mountPath: /opt/data/config.yaml
               name: platform-agent-config-vol
               subPath: config.yaml
+            - mountPath: /opt/data/SETTINGS.md
+              name: settings-volume
+              readOnly: true
+              subPath: SETTINGS.md
         - args:
             - -c
             - /fluent-bit/etc/fluent-bit.conf
@@ -307,6 +330,10 @@ spec:
           name: fluent-bit-config
         - emptyDir: {}
           name: fluent-bit-state
+        - configMap:
+            defaultMode: 420
+            name: platformagent-settings
+          name: settings-volume
 status: {}
 ---
 apiVersion: v1
