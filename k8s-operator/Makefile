@@ -182,12 +182,12 @@ endef
 
 .PHONY: provision gcp-provision
 provision gcp-provision: ## Bootstrap GCP, GKE resources, and deploy PlatformAgent.
-	@chmod +x scripts/*.sh
+	@chmod +x scripts/*.sh scripts/dev/*.sh 2>/dev/null || true
 	@./scripts/provision.sh $(ARGS)
 
 .PHONY: teardown gcp-teardown
 teardown gcp-teardown: ## Clean up and delete all provisioned GCP and GKE resources.
-	@chmod +x scripts/*.sh
+	@chmod +x scripts/*.sh scripts/dev/*.sh 2>/dev/null || true
 	@./scripts/teardown.sh
 
 .PHONY: gcp-provision-01-cluster
@@ -220,6 +220,12 @@ gcp-provision-06-deploy: ## Step 6: Deploy the PlatformAgent Custom Resource.
 	@chmod +x scripts/*.sh
 	@./scripts/provision_06_deploy_platform_agent.sh $(ARGS)
 
+.PHONY: dev-rebuild-agent
+dev-rebuild-agent: ## Fast local iteration: rebuild and redeploy an agent image (e.g. make dev-rebuild-agent ARGS="platform").
+	@chmod +x scripts/*.sh scripts/dev/*.sh 2>/dev/null || true
+	@./scripts/dev/dev_rebuild_agent.sh $(ARGS)
+
+
 .PHONY: gcp-teardown-06-deploy
 gcp-teardown-06-deploy: ## Teardown Step 6: Delete the PlatformAgent Custom Resource.
 	@chmod +x scripts/*.sh
@@ -244,6 +250,11 @@ gcp-teardown-03-iam: ## Teardown Step 3: Remove IAM service accounts and policie
 gcp-teardown-02-operator: ## Teardown Step 2: Undeploy the operator and CRDs.
 	@chmod +x scripts/*.sh
 	@./scripts/teardown_02_gcp_gke_operator.sh $(ARGS)
+
+.PHONY: gcp-teardown-dev-artifact-registry
+gcp-teardown-dev-artifact-registry: ## Teardown Dev Step: Delete the Artifact Registry repository created during local rebuilds.
+	@chmod +x scripts/*.sh scripts/dev/*.sh 2>/dev/null || true
+	@./scripts/dev/teardown_dev_01_gcp_artifact_registry.sh $(ARGS)
 
 .PHONY: gcp-teardown-01-cluster
 gcp-teardown-01-cluster: ## Teardown Step 1: Delete GKE cluster and local configuration state.
