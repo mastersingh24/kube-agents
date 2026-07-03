@@ -112,8 +112,12 @@ func renderConfigYAML(agent *agentv1alpha1.PlatformAgent) string {
 		Plugins struct {
 			Enabled []string `json:"enabled"`
 		} `json:"plugins"`
+		Display struct {
+			Platforms map[string]map[string]any `json:"platforms,omitempty"`
+		} `json:"display,omitempty"`
 	}{}
 
+	// Model & Terminal configuration
 	cfg.Model.Provider = "custom"
 	cfg.Model.Default = "model-default"
 	cfg.Model.Model = "model-default"
@@ -121,6 +125,8 @@ func renderConfigYAML(agent *agentv1alpha1.PlatformAgent) string {
 	cfg.Model.APIKey = "none"
 	cfg.Terminal.Backend = "local"
 	cfg.Terminal.Cwd = cwd
+
+	// MCP Servers & Toolsets configuration
 	cfg.MCPServers = map[string]any{
 		"platform_control": map[string]any{
 			"command":         "/opt/hermes/.venv/bin/python3",
@@ -149,15 +155,19 @@ func renderConfigYAML(agent *agentv1alpha1.PlatformAgent) string {
 		"cli":        {"hermes-cli", "mcp-agent_common", "mcp-platform_control", "mcp-developer_knowledge"},
 		"api_server": {"hermes-api-server", "mcp-agent_common", "mcp-platform_control", "mcp-developer_knowledge"},
 	}
+
+	// Execution & Display UX configuration
 	cfg.Approvals.CronMode = "approve"
 	cfg.Web.Backend = "ddgs"
 	cfg.Plugins.Enabled = []string{"hermes_otel"}
+	cfg.Display.Platforms = map[string]map[string]any{}
 
 	if agent.Spec.Integration != nil && agent.Spec.Integration.GoogleChat != nil {
 		gchat := agent.Spec.Integration.GoogleChat
 		if gchat.Enabled != nil {
 			cfg.Platforms.GoogleChat.Enabled = *gchat.Enabled
 		}
+		cfg.Display.Platforms["google_chat"] = resolveGoogleChatDisplayConfig(gchat.Mode)
 	}
 
 	data, err := yaml.Marshal(cfg)
@@ -165,6 +175,32 @@ func renderConfigYAML(agent *agentv1alpha1.PlatformAgent) string {
 		return ""
 	}
 	return string(data)
+}
+
+// resolveGoogleChatDisplayConfig resolves verbosity settings for Google Chat based on mode ("default" or "debug").
+func resolveGoogleChatDisplayConfig(mode string) map[string]any {
+	resolvedMode := "default"
+	if mode != "" {
+		resolvedMode = strings.ToLower(mode)
+	}
+
+	toolProgress := "off"
+	memoryNotifications := "off"
+	interimMessages := false
+
+	if resolvedMode == "debug" {
+		toolProgress = "all"
+		memoryNotifications = "verbose"
+		interimMessages = true
+	}
+
+	return map[string]any{
+		"tool_progress":              toolProgress,
+		"memory_notifications":       memoryNotifications,
+		"interim_assistant_messages": interimMessages,
+		"long_running_notifications": true,
+		"busy_ack_detail":            interimMessages,
+	}
 }
 
 // buildPVC generates the PVC manifest for agent data persistence
