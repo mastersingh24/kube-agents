@@ -452,7 +452,8 @@ spec:
             - --daemon-url=http://127.0.0.1:8699
             - --token-env=API_SERVER_KEY
             - --owner=platform
-            - --reason=FailedToDrainNode,CrashLoopBackOff,BackOff,ImagePullBackOff,ErrImagePull,OOMKilled
+            - --reason=Failed,FailedToDrainNode,CrashLoopBackOff,BackOff,ImagePullBackOff,ErrImagePull,OOMKilled
+            - --kubeconfig=/opt/data/home/.kube/watcher.config
           command:
             - /usr/local/bin/k8s-event-watcher
           env:
@@ -461,6 +462,8 @@ spec:
                 secretKeyRef:
                   key: api-key
                   name: platformagent-secrets
+            - name: HOME
+              value: /opt/data/home
           image: ghcr.io/gke-labs/kube-agents/platform-agent:latest
           imagePullPolicy: IfNotPresent
           name: event-watcher
@@ -476,6 +479,9 @@ spec:
             capabilities:
               drop:
                 - ALL
+          volumeMounts:
+            - mountPath: /opt/data
+              name: platform-agent-data-vol
       securityContext:
         fsGroup: 10000
         runAsNonRoot: true
