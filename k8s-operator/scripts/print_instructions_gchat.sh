@@ -22,6 +22,8 @@ if [ "${GOOGLE_CHAT_ENABLED:-false}" = "true" ]; then
   echo -e "       - Connection Settings: Select ${C_BOLD}Cloud Pub/Sub${C_RESET}"
   echo -e "       - Pub/Sub Topic Name: ${C_GREEN}projects/${PROJECT_ID}/topics/${CHAT_TOPIC_NAME}${C_RESET}"
   echo -e "       - Under Visibility, check: ${C_GREEN}Only specific people (add your email/emails: ${ALLOWED_USERS:-your-email})${C_RESET}"
+  echo -e "       - After saving, refresh the page and verify a ${C_BOLD}Service account email${C_RESET} appears under Connection settings."
+  echo -e "         ${C_YELLOW}If it stays blank, Chat will silently deliver NO events — re-run this script (step 2) and re-save the config.${C_RESET}"
   echo -e ""
   echo -e "[ ] 2. Send a DM to the Bot on Google Chat:"
   echo -e "       Type: ${C_WHITE}\"Hi Platform Agent\"${C_RESET}"
